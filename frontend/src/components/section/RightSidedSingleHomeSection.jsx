@@ -10,7 +10,7 @@ export default function LeftSidedSingleHomeSections(props) {
         router.push(link);
     }
     return (
-        <section className="w-full bg-zinc-900 py-12 px-4 sm:px-6 lg:px-8 pt-20 lg:pt-30">
+        <section className="w-full bg-black px-4 sm:px-6 lg:px-8 ">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 

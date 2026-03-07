@@ -36,16 +36,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Check token and admin status on mount
-  // useEffect(() => {
-  //   if (typeof window === 'undefined') return;
-  //   const token = localStorage.getItem('token');
-  //   const adminStatus = localStorage.getItem('isAdmin') === 'true'; // ✅ Get admin status
 
-  //   setIsLoggedIn(!!token);
-  //   setIsAdmin(adminStatus); // ✅ Set admin state
-  // }, [pathname]);
-  // REPLACE WITH:
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -169,11 +160,11 @@ export default function Header() {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? "bg-white/95 backdrop-blur-md shadow-lg"
+            ? "bg-white backdrop-blur-md shadow-lg"
             : "bg-white shadow-md"
           }`}
       >
-        <div className="max-w-8xl md:px-20 mx-auto px-4">
+        <div className="max-w-8xl md:px-10 mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Left - Hamburger Menu */}
             <button

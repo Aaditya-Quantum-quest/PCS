@@ -9,7 +9,7 @@ const products = [
         superscript: "®",
         title: "Premium Acrylic Photo",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005015/premium-acrylic-photo_ojccxc.webp",
-        bg: "#f5f5f0",
+        bg: "#ffffff",
         redirectTo: "/products/acrylic-photo",
     },
     {
@@ -18,7 +18,7 @@ const products = [
         superscript: "®",
         title: "Framed Acrylic Photo",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005022/framed-acrylic-photo_jpyvie.webp",
-        bg: "#f0ece8",
+        bg: "#ffffff",
         redirectTo: "/products/framed-acrylic-photo",
     },
     {
@@ -27,7 +27,7 @@ const products = [
         superscript: "®",
         title: "Wall Clocks",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005017/wall-clock_cz1g2q.webp",
-        bg: "#f0f0ec",
+        bg: "#ffffff",
         redirectTo: "/products/acrylic-wall-clock",
     },
     {
@@ -36,7 +36,7 @@ const products = [
         superscript: "®",
         title: "Acrylic Cut",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005007/acrylic-cutout_wxsn8e.webp",
-        bg: "#f5f0ec",
+        bg: "#ffffff",
         redirectTo: "/products/acrylic-cutout",
     },
     {
@@ -45,7 +45,7 @@ const products = [
         superscript: "®",
         title: "Name plates",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005010/acrylic-nameplate_cecbxw.webp",
-        bg: "#1a1a2e",
+        bg: "#ffffff",
         redirectTo: "/products/acrylic-nameplate",
     },
     {
@@ -54,7 +54,7 @@ const products = [
         superscript: "®",
         title: "Mini Photo Gallery Set",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772005010/mini-photo-gallery_d73vpc.webp",
-        bg: "#f0f5f0",
+        bg: "#ffffff",
         redirectTo: "/products/miniphoto-gallery",
     },
     {
@@ -63,7 +63,7 @@ const products = [
         superscript: "®",
         title: "Acrylic Photo",
         image: "https://res.cloudinary.com/dewxpvl5s/image/upload/v1772008153/acrylic-photo_qkgakw.webp",
-        bg: "#f5f0f5",
+        bg: "#ffffff",
         redirectTo: "/products/acrylic-photo",
     },
 ];
@@ -74,7 +74,7 @@ function ProductCard({ product }) {
     return (
         <Link href={product.redirectTo}>
             <div
-                className="flex flex-col items-center group cursor-pointer bg-[linear-gradient(160deg,#fff7f2_0%,#ffffff_45%,#fff3e8_100%)] "
+                className="flex flex-col items-center group cursor-pointer bg-white"
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
             >
@@ -133,9 +133,9 @@ export default function PCSSection() {
 
         <Fragment>
             <section
-                className="w-full py-24 mt-8 md:mt-6 px-6 bg-[linear-gradient(160deg,#fff7f2_0%,#ffffff_45%,#fff3e8_100%)]"
+                className="w-full pt-20 pb-6  px-6 bg-white"
                 style={{
-                    backgroundColor: "#f7f7f5",
+                    backgroundColor: "#ffffff",
                     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
                 }}
             >

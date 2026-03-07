@@ -31,11 +31,11 @@ export default function BuyNowClient() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('8x10');
-  const [selectedColor, setSelectedColor] = useState('Natural Oak');
+  const [selectedColor, setSelectedColor] = useState('');
 
-  const [frameMaterial, setFrameMaterial] = useState('wood');
+  const [frameMaterial, setFrameMaterial] = useState('');
   const [frameThickness, setFrameThickness] = useState('');
-  const [orientation, setOrientation] = useState('portrait');
+  const [orientation, setOrientation] = useState('');
   const [uploadedImageUrl, setUploadedImageUrl] = useState('');
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -44,7 +44,10 @@ export default function BuyNowClient() {
 
   // Default sizes for legacy products (no per-product sizes configured)
   const defaultSizes = ['5x7', '8x10', '11x14', '16x20'];
-  const colors = ['Natural Oak', 'Walnut Brown', 'Pure White', 'Matte Black'];
+  const defaultColors = ['Natural Oak', 'Walnut Brown', 'Pure White', 'Matte Black'];
+  const defaultMaterials = ['Wood', 'Metal', 'Acrylic'];
+  const defaultThicknesses = [10, 15, 20, 25];
+  const defaultOrientations = ['portrait', 'landscape', 'square'];
 
   // Price multipliers based on size for legacy products
   const sizeMultipliers = {
@@ -121,6 +124,31 @@ export default function BuyNowClient() {
         // If product has per-size options, default selected size to the first one
         if (res.data.sizes && res.data.sizes.length > 0) {
           setSelectedSize(res.data.sizes[0].label);
+        }
+
+        // Set default values for customization options from product data
+        if (res.data.colors && res.data.colors.length > 0) {
+          setSelectedColor(res.data.colors[0]);
+        } else {
+          setSelectedColor(defaultColors[0]);
+        }
+
+        if (res.data.frameMaterials && res.data.frameMaterials.length > 0) {
+          setFrameMaterial(res.data.frameMaterials[0]);
+        } else {
+          setFrameMaterial(defaultMaterials[0]);
+        }
+
+        if (res.data.thicknessOptions && res.data.thicknessOptions.length > 0) {
+          setFrameThickness(res.data.thicknessOptions[0]);
+        } else {
+          setFrameThickness(defaultThicknesses[0]);
+        }
+
+        if (res.data.orientationOptions && res.data.orientationOptions.length > 0) {
+          setOrientation(res.data.orientationOptions[0]);
+        } else {
+          setOrientation(defaultOrientations[0]);
         }
       } catch (err) {
         const msg =
@@ -223,11 +251,27 @@ export default function BuyNowClient() {
 
   const mainImage = product.imageUrl;
 
-  // Available sizes: use per-product sizes if present, otherwise legacy defaults
+  // Available options: use product-specific if present, otherwise defaults
   const availableSizes =
     product?.sizes && product.sizes.length > 0
       ? product.sizes.map((s) => s.label)
       : defaultSizes;
+
+  const availableColors = product?.colors && product.colors.length > 0
+    ? product.colors
+    : defaultColors;
+
+  const availableMaterials = product?.frameMaterials && product.frameMaterials.length > 0
+    ? product.frameMaterials
+    : defaultMaterials;
+
+  const availableThicknesses = product?.thicknessOptions && product.thicknessOptions.length > 0
+    ? product.thicknessOptions
+    : defaultThicknesses;
+
+  const availableOrientations = product?.orientationOptions && product.orientationOptions.length > 0
+    ? product.orientationOptions
+    : defaultOrientations;
   const images = product
     ? [
       product.imageUrl,
@@ -336,6 +380,32 @@ export default function BuyNowClient() {
               preferences in size, color, and orientation.
             </p>
 
+            {/* Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Upload Photo to Frame <span className="text-xs text-gray-500">(JPEG - Max 5MB)</span>
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUpload}
+                className="block w-full text-sm text-gray-700
+                           file:mr-4 file:py-2 file:px-4
+                           file:rounded-full file:border-0
+                           file:text-sm file:font-semibold
+                           file:bg-amber-50 file:text-amber-700
+                           hover:file:bg-amber-100"
+              />
+              {uploading && (
+                <p className="mt-2 text-xs text-gray-500">Uploading image…</p>
+              )}
+              {uploadedImageUrl && !uploading && (
+                <p className="mt-2 text-xs text-emerald-600">
+                  Image uploaded and ready to frame.
+                </p>
+              )}
+            </div>
+
             {/* Size */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3">
@@ -363,7 +433,7 @@ export default function BuyNowClient() {
                 Select Color
               </label>
               <div className="grid grid-cols-2 gap-3">
-                {colors.map((color) => (
+                {availableColors.map((color) => (
                   <button
                     key={color}
                     onClick={() => setSelectedColor(color)}
@@ -389,23 +459,28 @@ export default function BuyNowClient() {
                   onChange={(e) => setFrameMaterial(e.target.value)}
                   className="w-full px-3 py-2 cursor-pointer rounded-xl border text-black border-gray-200 text-sm active:ring-2"
                 >
-                  <option className='cursor-pointer' value="wood">Wood</option>
-                  <option className='cursor-pointer' value="metal">Metal</option>
-                  <option className='cursor-pointer' value="acrylic">Acrylic</option>
+                  {availableMaterials.map((material) => (
+                    <option key={material} className='cursor-pointer' value={material.toLowerCase()}>
+                      {material}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-900 mb-1">
                   Frame Thickness (mm)
                 </label>
-                <input
-                  type="number"
-                  min={5}
-                  max={50}
+                <select
                   value={frameThickness}
                   onChange={(e) => setFrameThickness(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-xl border text-black border-gray-200 text-sm active:ring-2"
-                />
+                >
+                  {availableThicknesses.map((thickness) => (
+                    <option key={thickness} className='cursor-pointer' value={thickness}>
+                      {thickness}mm
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-900 mb-1">
@@ -416,37 +491,13 @@ export default function BuyNowClient() {
                   onChange={(e) => setOrientation(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border cursor-pointer text-black border-gray-200 text-sm active:ring-2 "
                 >
-                  <option className='cursor-pointer' value="portrait">Portrait</option>
-                  <option className='cursor-pointer' value="landscape">Landscape</option>
-                  <option className='cursor-pointer' value="square">Square</option>
+                  {availableOrientations.map((orient) => (
+                    <option key={orient} className='cursor-pointer' value={orient}>
+                      {orient.charAt(0).toUpperCase() + orient.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
-            </div>
-
-            {/* Upload */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Upload Photo to Frame <span className="text-xs text-gray-500">(JPEG - Max 5MB)</span>
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleUpload}
-                className="block w-full text-sm text-gray-700
-                           file:mr-4 file:py-2 file:px-4
-                           file:rounded-full file:border-0
-                           file:text-sm file:font-semibold
-                           file:bg-amber-50 file:text-amber-700
-                           hover:file:bg-amber-100"
-              />
-              {uploading && (
-                <p className="mt-2 text-xs text-gray-500">Uploading image…</p>
-              )}
-              {uploadedImageUrl && !uploading && (
-                <p className="mt-2 text-xs text-emerald-600">
-                  Image uploaded and ready to frame.
-                </p>
-              )}
             </div>
 
 

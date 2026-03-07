@@ -2,15 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Heart, ShoppingBag, Star, ArrowRight } from 'lucide-react';
+import { Heart, ShoppingBag, Star, ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProductsByCategory({ category, heading }) {
     const [favorites, setFavorites] = useState(new Set());
     const [cart, setCart] = useState(new Set());
     const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    // Sorting states
+    const [sortBy, setSortBy] = useState('default');
+    const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+    const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
         if (!category) return;
@@ -23,6 +29,7 @@ export default function ProductsByCategory({ category, heading }) {
                     params: { category },
                 });
                 setProducts(res.data);
+                setFilteredProducts(res.data);
             } catch (err) {
                 const msg =
                     err.response?.data?.message ||
@@ -36,6 +43,55 @@ export default function ProductsByCategory({ category, heading }) {
 
         fetchProducts();
     }, [category]);
+    
+    // Apply filters and sorting
+    useEffect(() => {
+        let filtered = [...products];
+        
+        // Apply price range filter
+        if (priceRange.min || priceRange.max) {
+            filtered = filtered.filter(product => {
+                const price = getNumericPrice(product);
+                const min = priceRange.min ? Number(priceRange.min) : 0;
+                const max = priceRange.max ? Number(priceRange.max) : Infinity;
+                return price >= min && price <= max;
+            });
+        }
+        
+        // Apply sorting
+        switch (sortBy) {
+            case 'price-asc':
+                filtered.sort((a, b) => getNumericPrice(a) - getNumericPrice(b));
+                break;
+            case 'price-desc':
+                filtered.sort((a, b) => getNumericPrice(b) - getNumericPrice(a));
+                break;
+            case 'name-asc':
+                filtered.sort((a, b) => a.title.localeCompare(b.title));
+                break;
+            case 'name-desc':
+                filtered.sort((a, b) => b.title.localeCompare(a.title));
+                break;
+            default:
+                // Keep original order
+                break;
+        }
+        
+        setFilteredProducts(filtered);
+    }, [products, sortBy, priceRange]);
+    
+    // Helper function to get numeric price
+    const getNumericPrice = (product) => {
+        if (product.sizes && product.sizes.length > 0) {
+            const numericPrices = product.sizes
+                .map((s) => Number(s.price || 0))
+                .filter((p) => !Number.isNaN(p));
+            if (numericPrices.length > 0) {
+                return Math.min(...numericPrices);
+            }
+        }
+        return Number(product.price) || 0;
+    };
 
     const toggleFavorite = (id) => {
         setFavorites((prev) => {
@@ -122,14 +178,129 @@ export default function ProductsByCategory({ category, heading }) {
             {loading && (
                 <p className="mb-3 text-center text-sm text-slate-400">Loading products…</p>
             )}
-            {!loading && products.length === 0 && !error && (
+            
+            {/* Sorting and Filtering Controls */}
+            {!loading && products.length > 0 && (
+                <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                        {/* Sort Controls */}
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-gray-700">Sort by:</span>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => setSortBy('default')}
+                                    className={`px-3 py-1.5 cursor-pointer text-xs font-medium rounded-md transition-colors ${
+                                        sortBy === 'default'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Default
+                                </button>
+                                <button
+                                    onClick={() => setSortBy('price-asc')}
+                                    className={`px-3 py-1.5 text-xs cursor-pointer font-medium rounded-md transition-colors flex items-center gap-1 ${
+                                        sortBy === 'price-asc'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    <ArrowUp className="w-3 h-3" />
+                                    Price Low to High
+                                </button>
+                                <button
+                                    onClick={() => setSortBy('price-desc')}
+                                    className={`px-3 py-1.5 text-xs cursor-pointer font-medium rounded-md transition-colors flex items-center gap-1 ${
+                                        sortBy === 'price-desc'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    <ArrowDown className="w-3 h-3" />
+                                    Price High to Low
+                                </button>
+                                <button
+                                    onClick={() => setSortBy('name-asc')}
+                                    className={`px-3 py-1.5 text-xs cursor-pointer font-medium rounded-md transition-colors ${
+                                        sortBy === 'name-asc'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Name A-Z
+                                </button>
+                                <button
+                                    onClick={() => setSortBy('name-desc')}
+                                    className={`px-3 py-1.5 text-xs cursor-pointer font-medium rounded-md transition-colors ${
+                                        sortBy === 'name-desc'
+                                            ? 'bg-blue-500 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Name Z-A
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Price Range Filter Toggle */}
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="px-3 py-1.5 text-xs font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors flex items-center gap-1"
+                        >
+                            <ArrowUpDown className="w-3 h-3" />
+                            Price Filter
+                        </button>
+                    </div>
+                    
+                    {/* Price Range Filter */}
+                    {showFilters && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <span className="text-sm font-medium text-gray-700">Price Range:</span>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Min"
+                                        value={priceRange.min}
+                                        onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                                        className="w-24 px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                                        min="0"
+                                    />
+                                    <span className="text-gray-500">to</span>
+                                    <input
+                                        type="number"
+                                        placeholder="Max"
+                                        value={priceRange.max}
+                                        onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                                        className="w-24 px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                                        min="0"
+                                    />
+                                    <button
+                                        onClick={() => setPriceRange({ min: '', max: '' })}
+                                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                            {filteredProducts.length !== products.length && (
+                                <p className="mt-2 text-xs text-gray-600">
+                                    Showing {filteredProducts.length} of {products.length} products
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+            
+            {!loading && filteredProducts.length === 0 && !error && (
                 <p className="mb-3 text-center text-sm text-slate-400">
-                    No products found in this category yet.
+                    {products.length === 0 ? 'No products found in this category yet.' : 'No products match your current filters.'}
                 </p>
             )}
             {/* ── Product Grid — unchanged ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-px">
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                     <div
                         key={product._id}
                         className="group bg-white hover:shadow-lg transition-shadow duration-200 cursor-pointer"
@@ -161,21 +332,6 @@ export default function ProductsByCategory({ category, heading }) {
                                     {getDisplayPrice(product)}
                                 </span>
                             </div>
-
-                            {/* Rating strip */}
-                            <div className="flex items-center gap-1 mb-3">
-                                <div className="flex items-center bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 gap-0.5">
-                                    <span>4.8</span>
-                                    <Star className="w-2.5 h-2.5 fill-white" />
-                                </div>
-                                <span className="text-[10px] text-gray-400">| 120+ ratings</span>
-                            </div>
-
-                            {/* Free shipping */}
-                            <p className="text-[11px] text-green-600 font-medium mb-3">
-                                FREE Delivery
-                            </p>
-
                             <Link href={`/buy/${product._id}`}>
                                 <button className="w-full cursor-pointer bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-1.5 px-3 text-xs uppercase tracking-wide transition-colors duration-150 active:scale-95 border border-yellow-500">
                                     Buy Now

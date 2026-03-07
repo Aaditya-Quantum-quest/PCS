@@ -29,6 +29,12 @@ export default function ProductsAdminPage() {
   const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
   const [uploadType, setUploadType] = useState('url');
 
+  // States for dynamic customization options
+  const [colors, setColors] = useState(['']);
+  const [frameMaterials, setFrameMaterials] = useState(['']);
+  const [thicknessOptions, setThicknessOptions] = useState(['']);
+  const [orientationOptions, setOrientationOptions] = useState(['portrait', 'landscape', 'square']);
+
   // protect route: only admin (cookie-based)
   useEffect(() => {
     let cancelled = false;
@@ -179,6 +185,11 @@ export default function ProductsAdminPage() {
         category: category,
         description: description.trim(),
         sizes: cleanedSizes,
+        // Add customization options
+        colors: colors.filter(c => c.trim() !== ''),
+        frameMaterials: frameMaterials.filter(m => m.trim() !== ''),
+        thicknessOptions: thicknessOptions.filter(t => t !== '' && !isNaN(t)).map(t => Number(t)),
+        orientationOptions: orientationOptions.filter(o => o.trim() !== ''),
       };
 
       console.log('Product data before upload:', productData);
@@ -266,6 +277,12 @@ export default function ProductsAdminPage() {
       setSelectedImages([]);
       setImagePreviewUrls([]);
       setUploadType('url');
+      // Reset customization options
+      setColors(['']);
+      setFrameMaterials(['']);
+      setThicknessOptions(['']);
+      setOrientationOptions(['portrait', 'landscape', 'square']);
+      setSizesList([{ label: '', price: '' }]);
 
       // Scroll to top to see success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -295,6 +312,12 @@ export default function ProductsAdminPage() {
         }))
         : [{ label: '', price: '' }]
     );
+    // Set customization options
+    setColors(product.colors && product.colors.length > 0 ? product.colors : ['']);
+    setFrameMaterials(product.frameMaterials && product.frameMaterials.length > 0 ? product.frameMaterials : ['']);
+    setThicknessOptions(product.thicknessOptions && product.thicknessOptions.length > 0 ? product.thicknessOptions.map(t => String(t)) : ['']);
+    setOrientationOptions(product.orientationOptions && product.orientationOptions.length > 0 ? product.orientationOptions : ['portrait', 'landscape', 'square']);
+    
     setEditingId(product._id);
     setUploadType('url');
     setSelectedImages([]);
@@ -321,6 +344,12 @@ export default function ProductsAdminPage() {
         setCategory(''); setDescription('');
         setSelectedImages([]);
         setImagePreviewUrls([]);
+        // Reset customization options
+        setColors(['']);
+        setFrameMaterials(['']);
+        setThicknessOptions(['']);
+        setOrientationOptions(['portrait', 'landscape', 'square']);
+        setSizesList([{ label: '', price: '' }]);
       }
       setSuccessMsg('Product deleted successfully!');
     } catch (err) {
@@ -386,6 +415,12 @@ export default function ProductsAdminPage() {
                   setCategory(''); setDescription('');
                   setSelectedImages([]);
                   setImagePreviewUrls([]);
+                  // Reset customization options
+                  setColors(['']);
+                  setFrameMaterials(['']);
+                  setThicknessOptions(['']);
+                  setOrientationOptions(['portrait', 'landscape', 'square']);
+                  setSizesList([{ label: '', price: '' }]);
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
@@ -558,7 +593,7 @@ export default function ProductsAdminPage() {
                   >
                     Image URL
                   </button>
-                  {/* <button
+                  <button
                     type="button"
                     onClick={() => {
                       setUploadType('upload');
@@ -570,7 +605,7 @@ export default function ProductsAdminPage() {
                       }`}
                   >
                     Upload Images
-                  </button> */}
+                  </button>
                 </div>
 
                 {uploadType === 'url' && (
@@ -675,6 +710,176 @@ export default function ProductsAdminPage() {
                 )}
               </div>
 
+              {/* Dynamic Customization Options */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-purple-300 mb-3">
+                  Customization Options
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Colors */}
+                  <div>
+                    <label className="block text-xs font-medium text-purple-400 mb-2">
+                      Available Colors
+                    </label>
+                    <div className="space-y-2">
+                      {colors.map((color, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g., Natural Oak, Walnut Brown"
+                            value={color}
+                            onChange={(e) => {
+                              const newColors = [...colors];
+                              newColors[index] = e.target.value;
+                              setColors(newColors);
+                            }}
+                            className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-400/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          />
+                          {colors.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setColors(colors.filter((_, i) => i !== index))}
+                              className="p-2 text-red-300 hover:text-white hover:bg-red-500/20 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setColors([...colors, ''])}
+                        className="text-xs text-purple-300 hover:text-white transition-all"
+                      >
+                        + Add Color
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Frame Materials */}
+                  <div>
+                    <label className="block text-xs font-medium text-purple-400 mb-2">
+                      Frame Materials
+                    </label>
+                    <div className="space-y-2">
+                      {frameMaterials.map((material, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="e.g., Wood, Metal, Acrylic"
+                            value={material}
+                            onChange={(e) => {
+                              const newMaterials = [...frameMaterials];
+                              newMaterials[index] = e.target.value;
+                              setFrameMaterials(newMaterials);
+                            }}
+                            className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-400/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          />
+                          {frameMaterials.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setFrameMaterials(frameMaterials.filter((_, i) => i !== index))}
+                              className="p-2 text-red-300 hover:text-white hover:bg-red-500/20 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setFrameMaterials([...frameMaterials, ''])}
+                        className="text-xs text-purple-300 hover:text-white transition-all"
+                      >
+                        + Add Material
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Thickness Options */}
+                  <div>
+                    <label className="block text-xs font-medium text-purple-400 mb-2">
+                      Frame Thickness (mm)
+                    </label>
+                    <div className="space-y-2">
+                      {thicknessOptions.map((thickness, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="number"
+                            placeholder="e.g., 10, 15, 20"
+                            value={thickness}
+                            onChange={(e) => {
+                              const newThickness = [...thicknessOptions];
+                              newThickness[index] = e.target.value;
+                              setThicknessOptions(newThickness);
+                            }}
+                            className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-400/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          />
+                          {thicknessOptions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setThicknessOptions(thicknessOptions.filter((_, i) => i !== index))}
+                              className="p-2 text-red-300 hover:text-white hover:bg-red-500/20 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setThicknessOptions([...thicknessOptions, ''])}
+                        className="text-xs text-purple-300 hover:text-white transition-all"
+                      >
+                        + Add Thickness
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Orientation Options */}
+                  <div>
+                    <label className="block text-xs font-medium text-purple-400 mb-2">
+                      Orientation Options
+                    </label>
+                    <div className="space-y-2">
+                      {orientationOptions.map((orientation, index) => (
+                        <div key={index} className="flex gap-2">
+                          <select
+                            value={orientation}
+                            onChange={(e) => {
+                              const newOrientations = [...orientationOptions];
+                              newOrientations[index] = e.target.value;
+                              setOrientationOptions(newOrientations);
+                            }}
+                            className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                          >
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                            <option value="square">Square</option>
+                          </select>
+                          {orientationOptions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setOrientationOptions(orientationOptions.filter((_, i) => i !== index))}
+                              className="p-2 text-red-300 hover:text-white hover:bg-red-500/20 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setOrientationOptions([...orientationOptions, 'portrait'])}
+                        className="text-xs text-purple-300 hover:text-white transition-all"
+                      >
+                        + Add Orientation
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Description */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-purple-300 mb-2 flex items-center gap-2">
@@ -717,6 +922,12 @@ export default function ProductsAdminPage() {
                       setCategory(''); setDescription('');
                       setSelectedImages([]);
                       setImagePreviewUrls([]);
+                      // Reset customization options
+                      setColors(['']);
+                      setFrameMaterials(['']);
+                      setThicknessOptions(['']);
+                      setOrientationOptions(['portrait', 'landscape', 'square']);
+                      setSizesList([{ label: '', price: '' }]);
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}

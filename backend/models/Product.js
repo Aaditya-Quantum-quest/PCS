@@ -50,6 +50,25 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+    // Dynamic customization options
+    colors: [{
+      type: String,
+      trim: true,
+    }],
+    frameMaterials: [{
+      type: String,
+      trim: true,
+    }],
+    thicknessOptions: [{
+      type: Number,
+      min: 1,
+      max: 100,
+    }],
+    orientationOptions: [{
+      type: String,
+      trim: true,
+      enum: ['portrait', 'landscape', 'square'],
+    }],
   },
   {
     timestamps: true,
